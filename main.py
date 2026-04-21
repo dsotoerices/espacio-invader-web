@@ -3,7 +3,7 @@ import random
 import math
 import sys
 import os
-import asyncio # 1. Importar asyncio
+import asyncio 
 
 # Inicializar pygame
 pygame.init()
@@ -12,15 +12,23 @@ screen_width = 800
 screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 
-# 2. Rutas simplificadas para la web
+# Rutas corregidas para Pygbag y Vercel
 def resource_path(relative_path):
-    return os.path.join('.', relative_path)
+    return os.path.join(os.getcwd(), relative_path)
 
 # Cargar recursos
+# Importante: Si esto falla, el juego se queda en negro. 
+# Verifica que las carpetas en GitHub se llamen exactamente como aquí (minúsculas/mayúsculas)
 background = pygame.image.load(resource_path('assets/images/background.png'))
 icon = pygame.image.load(resource_path('assets/images/ufo.png'))
-# En la web, a veces el mp3 requiere interacción del usuario antes de sonar
-pygame.mixer.music.load(resource_path('assets/audios/background_music.mp3'))
+
+# --- SECCIÓN DE AUDIO (COMENTADA PARA EVITAR PANTALLA NEGRA) ---
+# Pygbag tiene problemas con MP3. Una vez que el juego funcione, 
+# intenta convertir a .ogg y reactivar estas líneas.
+# pygame.mixer.music.load(resource_path('assets/audios/background_music.mp3'))
+# pygame.mixer.music.play(-1)
+# --------------------------------------------------------------
+
 playerimg = pygame.image.load(resource_path('assets/images/space-invaders.png'))
 bulletimg = pygame.image.load(resource_path('assets/images/bullet.png'))
 over_font = pygame.font.Font(resource_path('assets/fonts/RAVIE.TTF'), 60)
@@ -28,10 +36,8 @@ font = pygame.font.Font(resource_path('assets/fonts/comicbd.ttf'), 32)
 
 pygame.display.set_caption("Space Invader")
 pygame.display.set_icon(icon)
-pygame.mixer.music.play(-1)
 clock = pygame.time.Clock()
 
-# Variables de juego
 playerX, playerY = 370, 470
 playerx_change = 0
 score = 0
@@ -43,6 +49,7 @@ enemyimg, enemyX, enemyY, enemyX_change, enemyY_change = [], [], [], [], []
 no_of_enemies = 10
 
 for i in range(no_of_enemies):
+    # Cargamos el enemigo (asegúrate que enemy1.png existe)
     enemyimg.append(pygame.image.load(resource_path('assets/images/enemy1.png')))
     enemyX.append(random.randint(0, 736))
     enemyY.append(random.randint(0, 150))
@@ -73,7 +80,6 @@ def game_over_text():
     text_rect = over_text.get_rect(center=(int(screen_width/2), int(screen_height/2)))
     screen.blit(over_text, text_rect)
 
-# 3. Función principal ASÍNCRONA
 async def main():
     global score, playerX, playerx_change, bulletX, bulletY, bullet_state
 
@@ -127,9 +133,9 @@ async def main():
         show_score()
         pygame.display.update()
         
-        # 4. Línea vital para que la web no se bloquee
+        # Pausa asíncrona para que el navegador no se bloquee
         await asyncio.sleep(0)
-        clock.tick(60) # 60 FPS es más estable en web
+        clock.tick(60) 
 
 # Ejecutar el juego
 asyncio.run(main())
