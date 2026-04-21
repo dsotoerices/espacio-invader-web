@@ -16,19 +16,9 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 def resource_path(relative_path):
     return os.path.join(os.getcwd(), relative_path)
 
-# Cargar recursos
-# Importante: Si esto falla, el juego se queda en negro. 
-# Verifica que las carpetas en GitHub se llamen exactamente como aquí (minúsculas/mayúsculas)
+# Cargar recursos (Imágenes y fuentes)
 background = pygame.image.load(resource_path('assets/images/background.png'))
 icon = pygame.image.load(resource_path('assets/images/ufo.png'))
-
-# --- SECCIÓN DE AUDIO (COMENTADA PARA EVITAR PANTALLA NEGRA) ---
-# Pygbag tiene problemas con MP3. Una vez que el juego funcione, 
-# intenta convertir a .ogg y reactivar estas líneas.
-# pygame.mixer.music.load(resource_path('assets/audios/background_music.mp3'))
-# pygame.mixer.music.play(-1)
-# --------------------------------------------------------------
-
 playerimg = pygame.image.load(resource_path('assets/images/space-invaders.png'))
 bulletimg = pygame.image.load(resource_path('assets/images/bullet.png'))
 over_font = pygame.font.Font(resource_path('assets/fonts/RAVIE.TTF'), 60)
@@ -38,6 +28,7 @@ pygame.display.set_caption("Space Invader")
 pygame.display.set_icon(icon)
 clock = pygame.time.Clock()
 
+# Variables de juego
 playerX, playerY = 370, 470
 playerx_change = 0
 score = 0
@@ -45,11 +36,13 @@ bulletX, bulletY = 0, 480
 bulletY_change = 10
 bullet_state = "ready"
 
+# Variable de control para el audio
+music_started = False
+
 enemyimg, enemyX, enemyY, enemyX_change, enemyY_change = [], [], [], [], []
 no_of_enemies = 10
 
 for i in range(no_of_enemies):
-    # Cargamos el enemigo (asegúrate que enemy1.png existe)
     enemyimg.append(pygame.image.load(resource_path('assets/images/enemy1.png')))
     enemyX.append(random.randint(0, 736))
     enemyY.append(random.randint(0, 150))
@@ -81,7 +74,7 @@ def game_over_text():
     screen.blit(over_text, text_rect)
 
 async def main():
-    global score, playerX, playerx_change, bulletX, bulletY, bullet_state
+    global score, playerX, playerx_change, bulletX, bulletY, bullet_state, music_started
 
     in_game = True
     while in_game:
@@ -91,12 +84,25 @@ async def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 in_game = False
+            
             if event.type == pygame.KEYDOWN:
+                # --- LÓGICA DE AUDIO WEB ---
+                # Se activa con la primera interacción del usuario (teclado)
+                if not music_started:
+                    try:
+                        pygame.mixer.music.load(resource_path('assets/audios/background_music.ogg'))
+                        pygame.mixer.music.play(-1)
+                        music_started = True
+                    except Exception as e:
+                        print(f"Error cargando audio: {e}")
+                # ---------------------------
+
                 if event.key == pygame.K_LEFT: playerx_change = -5
                 if event.key == pygame.K_RIGHT: playerx_change = 5
                 if event.key == pygame.K_SPACE and bullet_state == "ready":
                     bulletX = playerX
                     fire_bullet(bulletX, bulletY)
+            
             if event.type == pygame.KEYUP:
                 if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
                     playerx_change = 0
